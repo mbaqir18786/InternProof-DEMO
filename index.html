@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InternProof | Digital Internship Verification</title>
+  <meta name="description" content="Somaiya University's official digital portal for internship authentication, verification, and credit tracking.">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- SITE HEADER -->
+  <header class="site-header">
+    <div class="container header-container">
+      <div class="brand">
+        <!-- Somaiya Red Accent Emblem represented as SVG -->
+        <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" rx="20" fill="#B7202E"/>
+          <path d="M30 30H70V45H45V55H65V70H30V30Z" fill="white"/>
+        </svg>
+        <span class="brand-text">Intern<span>Proof</span></span>
+      </div>
+      <button class="nav-link-btn" id="btnAdminPortal">
+        <i data-lucide="shield-check"></i> Admin Portal
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN HERO SECTION -->
+  <section class="hero container">
+    <h1>Verify Your Internship Credit</h1>
+    <p>Automate your internship verification with Somaiya University's Training & Placement Office. Fast, secure, and completely paperless.</p>
+    
+    <!-- Tab Controls -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" id="tabSubmit">
+        <i data-lucide="file-plus-2"></i> Submit Proof
+      </button>
+      <button class="tab-btn" id="tabTrack">
+        <i data-lucide="search"></i> Track Status
+      </button>
+    </div>
+  </section>
+
+  <!-- CONTENT PANELS -->
+  <main class="container">
+    
+    <!-- TAB 1: SUBMISSION FORM -->
+    <section id="panelSubmit" class="tab-content active">
+      <div class="card">
+        
+        <!-- Wizard Step Indicators -->
+        <div class="step-indicator">
+          <div class="step-progress-bar" id="stepProgressBar"></div>
+          
+          <div class="step-item active" data-step="1">
+            <div class="step-circle">1</div>
+            <span class="step-label">Basics</span>
+          </div>
+          <div class="step-item" data-step="2">
+            <div class="step-circle">2</div>
+            <span class="step-label">Internship</span>
+          </div>
+          <div class="step-item" data-step="3">
+            <div class="step-circle">3</div>
+            <span class="step-label">Letter</span>
+          </div>
+          <div class="step-item" data-step="4">
+            <div class="step-circle">4</div>
+            <span class="step-label">Review</span>
+          </div>
+        </div>
+
+        <!-- Submit Multi-Step Form -->
+        <form id="internshipForm" novalidate>
+          
+          <!-- STEP 1: Student & College Details -->
+          <div class="form-step active" data-step="1">
+            <h3 style="margin-bottom: 20px;">Student & College Details</h3>
+            
+            <div class="form-group">
+              <label for="studentName">Full Name</label>
+              <input type="text" id="studentName" name="studentName" placeholder="e.g. Baqir Khan" required>
+              <span class="validation-error">Please enter your full name.</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="rollNumber">Roll Number (8 Digits)</label>
+                <input type="text" id="rollNumber" name="rollNumber" placeholder="e.g. 16010123" required>
+                <span class="validation-error">Please enter a valid 8-digit roll number.</span>
+              </div>
+              <div class="form-group">
+                <label for="department">Department</label>
+                <select id="department" name="department" required>
+                  <option value="" disabled selected>Select Department</option>
+                  <option value="Computer Engineering">Computer Engineering</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics & Telecom">Electronics & Telecom</option>
+                  <option value="Mechanical Engineering">Mechanical Engineering</option>
+                  <option value="AI & Data Science">AI & Data Science</option>
+                </select>
+                <span class="validation-error">Please select your department.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="studentEmail">Somaiya Email Address</label>
+              <input type="email" id="studentEmail" name="studentEmail" placeholder="e.g. student@somaiya.edu" required>
+              <span class="validation-error">Please enter a valid Somaiya email address ending in @somaiya.edu.</span>
+            </div>
+
+            <div class="btn-group right-align">
+              <button type="button" class="btn btn-primary btn-next">
+                Continue <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2: Internship & Supervisor Details -->
+          <div class="form-step" data-step="2">
+            <h3 style="margin-bottom: 20px;">Internship & Supervisor Details</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="internshipType">Internship Type</label>
+                <select id="internshipType" name="internshipType" required>
+                  <option value="external" selected>External (Company)</option>
+                  <option value="internal">Internal (College/University)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="companyName">Organization/Company Name</label>
+                <input type="text" id="companyName" name="companyName" placeholder="e.g. Google India" required>
+                <span class="validation-error">Please enter the company or college department name.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="roleTitle">Internship Role Title</label>
+              <input type="text" id="roleTitle" name="roleTitle" placeholder="e.g. Frontend UI/UX Developer" required>
+              <span class="validation-error">Please enter your role title.</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" id="startDate" name="startDate" required>
+                <span class="validation-error">Please select a valid start date.</span>
+              </div>
+              <div class="form-group">
+                <label for="endDate">End Date</label>
+                <input type="date" id="endDate" name="endDate" required>
+                <span class="validation-error">End date must be after start date.</span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="mentorName">Mentor/Supervisor Name</label>
+                <input type="text" id="mentorName" name="mentorName" placeholder="e.g. Dr. Srinivas Iyengar" required>
+                <span class="validation-error">Please enter the mentor's name.</span>
+              </div>
+              <div class="form-group">
+                <label for="mentorEmail">Mentor/Supervisor Email</label>
+                <input type="email" id="mentorEmail" name="mentorEmail" placeholder="e.g. mentor@company.com" required>
+                <span class="validation-error" id="mentorEmailError">Please enter a valid supervisor email.</span>
+                <span class="input-helper" id="mentorEmailHelper">No @gmail.com emails allowed. External internships must not use a somaiya.edu domain.</span>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-secondary btn-prev">
+                <i data-lucide="arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next">
+                Continue <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3: Documentation Upload -->
+          <div class="form-step" data-step="3">
+            <h3 style="margin-bottom: 8px;">Offer Letter / Appointment Letter</h3>
+            <p style="margin-bottom: 24px; color: var(--text-muted);">Upload a copy of your internship offer letter or appointment letter issued by the company. This is required to begin the verification process.</p>
+
+            <div class="form-group">
+              <label for="certificateLink">Shareable Offer Letter Link (Google Drive)</label>
+              <input type="text" id="certificateLink" name="certificateLink" placeholder="https://drive.google.com/..." required>
+              <span class="validation-error">Please enter a valid Google Drive link.</span>
+              <span class="input-helper">Upload your offer letter to Google Drive and share the link. Set permission to "Anyone with the link can view".</span>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-secondary btn-prev">
+                <i data-lucide="arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary btn-next">
+                Review Details <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4: Review and Submit -->
+          <div class="form-step" data-step="4">
+            <h3 style="margin-bottom: 8px;">Review Your Submission</h3>
+            <p style="margin-bottom: 24px; color: var(--text-muted);">Review all details carefully before submitting. A verification request will be sent immediately to your supervisor's email.</p>
+
+            <div class="review-summary">
+              
+              <!-- Review Segment 1 -->
+              <div class="review-section">
+                <h4>Student Details</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Name</span>
+                    <span class="review-value" id="revStudentName">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Roll Number & Dept</span>
+                    <span class="review-value" id="revRollDept">-</span>
+                  </div>
+                  <div class="review-item-full">
+                    <span class="review-label">Somaiya Email</span>
+                    <span class="review-value" id="revStudentEmail">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review Segment 2 -->
+              <div class="review-section">
+                <h4>Internship Details</h4>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Company & Type</span>
+                    <span class="review-value" id="revCompanyType">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Role Title</span>
+                    <span class="review-value" id="revRoleTitle">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Duration</span>
+                    <span class="review-value" id="revDuration">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Supervisor (Email)</span>
+                    <span class="review-value" id="revMentorInfo">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review Segment 3 -->
+              <div class="review-section">
+                <h4>Offer Letter</h4>
+                <div class="review-item-full">
+                  <span class="review-label">Document Link</span>
+                  <a href="#" target="_blank" class="review-value" id="revCertificateLink" style="word-break: break-all;">-</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-secondary btn-prev">
+                <i data-lucide="arrow-left"></i> Edit Details
+              </button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitForm">
+                Confirm & Submit <i data-lucide="check"></i>
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 2: TRACK STATUS LOOKUP -->
+    <section id="panelTrack" class="tab-content">
+      <div class="card lookup-container">
+        <h3 style="margin-bottom: 8px; text-align: center;">Check Verification Status</h3>
+        <p style="margin-bottom: 24px; color: var(--text-muted); text-align: center;">Enter your registration details below to inspect the status of your internship credits.</p>
+
+        <form id="trackForm" novalidate>
+          <div class="form-group">
+            <label for="trackRollNumber">Roll Number (8 Digits)</label>
+            <input type="text" id="trackRollNumber" name="trackRollNumber" placeholder="e.g. 16010123" required>
+            <span class="validation-error">Please enter a valid 8-digit roll number.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="trackSubmissionId">Submission ID / Token (Optional)</label>
+            <input type="text" id="trackSubmissionId" name="trackSubmissionId" placeholder="e.g. IP-2026-89401">
+            <span class="input-helper">If you don't have the submission ID, we will show your latest entry.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i data-lucide="search"></i> Search Application
+          </button>
+        </form>
+
+        <!-- Dynamic Verification Timeline Result -->
+        <div id="trackResultPanel" style="display: none; margin-top: 32px;">
+          <h3 id="trackResultTitle" style="font-size: 16px; margin-bottom: 8px;">Internship Submission Found</h3>
+          <p id="trackResultMeta" style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">-</p>
+
+          <div class="timeline">
+            <!-- Node 1: Submission -->
+            <div class="timeline-item">
+              <div class="timeline-icon completed" id="timeNodeSubmit">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Submitted</div>
+                <div class="timeline-time" id="timeNodeSubmitDate">-</div>
+                <div class="timeline-desc">Application saved in database and awaiting mentor review.</div>
+              </div>
+            </div>
+
+            <!-- Node 2: Company Verification -->
+            <div class="timeline-item">
+              <div class="timeline-icon" id="timeNodeCompany">
+                <i data-lucide="loader" style="width: 14px; height: 14px;"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Company Verification</div>
+                <div class="timeline-time" id="timeNodeCompanyStatus">-</div>
+                <div class="timeline-desc" id="timeNodeCompanyDesc">Verification link emailed to supervisor.</div>
+                
+                <!-- Discrepancy / Remarks display container -->
+                <div class="remarks-box" id="companyRemarksBox" style="display: none;">
+                  <div class="remarks-title">Supervisor Comments:</div>
+                  <p id="companyRemarksText" style="font-size: 13px; color: var(--text-heading);">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Node 3: Faculty Recommendation -->
+            <div class="timeline-item">
+              <div class="timeline-icon" id="timeNodeFaculty">
+                <i data-lucide="shield" style="width: 14px; height: 14px;"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Faculty Mentor Audit</div>
+                <div class="timeline-time" id="timeNodeFacultyStatus">-</div>
+                <div class="timeline-desc" id="timeNodeFacultyDesc">Awaiting company verification.</div>
+              </div>
+            </div>
+
+            <!-- Node 4: TPO Final Sign-Off -->
+            <div class="timeline-item">
+              <div class="timeline-icon" id="timeNodeTpo">
+                <i data-lucide="award" style="width: 14px; height: 14px;"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">TPO Final Credit Approval</div>
+                <div class="timeline-time" id="timeNodeTpoStatus">-</div>
+                <div class="timeline-desc" id="timeNodeTpoDesc">Academic placement record compilation.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 Somaiya Vidyavihar University. Training & Placement Office (TPO).</p>
+      <p style="margin-top: 6px; font-size: 11px; opacity: 0.8;">InternProof — Premium Verification Engine. Built with pride.</p>
+    </div>
+  </footer>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <!-- Lucide icons package loaded via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

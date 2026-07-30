@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InternProof | Internship Verification</title>
+  <meta name="description" content="Company mentor verification page for Somaiya Vidyavihar University internship submissions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <div class="verify-page" id="verifyPage">
+
+    <div class="verify-container" id="verifyContainer">
+
+      <!-- HEADER -->
+      <div class="verify-header">
+        <div>
+          <div class="verify-logo-text">Intern<span>Proof</span></div>
+          <div class="verify-header-sub">Somaiya Vidyavihar University &mdash; Training &amp; Placement Office</div>
+        </div>
+      </div>
+
+      <!-- BODY — dynamically filled by verify.js -->
+      <div class="verify-body" id="verifyBody">
+
+        <!-- LOADING STATE (default) -->
+        <div class="verify-loading" id="stateLoading">
+          <div class="spinner"></div>
+          <p>Loading verification details&hellip;</p>
+        </div>
+
+        <!-- ERROR STATE -->
+        <div id="stateError" style="display:none;">
+          <div class="verify-result">
+            <div class="verify-result-icon error">&#10005;</div>
+            <h3 id="errorTitle">Link Invalid</h3>
+            <p id="errorMessage">This verification link is invalid or has already been used.</p>
+          </div>
+        </div>
+
+        <!-- SUCCESS STATE (after submission) -->
+        <div id="stateSuccess" style="display:none;">
+          <div class="verify-result">
+            <div class="verify-result-icon success" id="successIcon">&#10003;</div>
+            <h3 id="successTitle">Response Recorded</h3>
+            <p id="successMessage">Thank you for your response. The student will be notified.</p>
+          </div>
+        </div>
+
+        <!-- MAIN FORM STATE -->
+        <div id="stateForm" style="display:none;">
+          <p class="verify-greeting">
+            Dear <strong id="mentorNameDisplay">Mentor</strong>,<br><br>
+            A student from <strong>Somaiya Vidyavihar University</strong> has listed you as their
+            internship supervisor. Please review the details below and confirm or dispute them.
+          </p>
+
+          <!-- Internship Details Table -->
+          <table class="verify-detail-table">
+            <tr>
+              <th colspan="2">
+                Internship Details &nbsp;
+                <span class="verify-id-pill" id="detailSubmissionId"></span>
+              </th>
+            </tr>
+            <tr><td>Student Name</td><td id="detailStudentName">&mdash;</td></tr>
+            <tr><td>Roll Number</td><td id="detailRollNumber">&mdash;</td></tr>
+            <tr><td>Department</td><td id="detailDepartment">&mdash;</td></tr>
+            <tr><td>Organization</td><td id="detailCompany">&mdash;</td></tr>
+            <tr><td>Role / Position</td><td id="detailRole">&mdash;</td></tr>
+            <tr><td>Duration</td><td id="detailDuration">&mdash;</td></tr>
+            <tr>
+              <td>Offer Letter</td>
+              <td><a id="detailCertLink" href="#" target="_blank" rel="noopener"
+                  style="color:#B7202E; text-decoration:none; font-weight:500;">View Document ↗</a></td>
+            </tr>
+          </table>
+
+          <!-- Remarks -->
+          <div class="verify-remarks-wrap">
+            <label for="verifyRemarks">
+              Remarks <span style="opacity:0.5; font-weight:400;">(optional — describe any discrepancy if flagging)</span>
+            </label>
+            <textarea id="verifyRemarks" placeholder="e.g. I did not supervise this student. / All details are accurate."></textarea>
+          </div>
+
+          <!-- Note -->
+          <div class="verify-note">
+            <strong>Note:</strong> This link is single-use and expires in <strong>7 days</strong> of issuance.
+            If you did not supervise this student, please click &ldquo;Flag a Discrepancy&rdquo; and briefly describe the issue above.
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="verify-actions">
+            <button class="verify-btn-approve" id="btnApprove">
+              &#10003; &nbsp; Confirm &amp; Verify Details
+            </button>
+            <button class="verify-btn-flag" id="btnFlag">
+              &#9888; &nbsp; Flag a Discrepancy
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /.verify-body -->
+
+      <!-- FOOTER -->
+      <div class="verify-footer">
+        <p><strong>Somaiya Vidyavihar University</strong> &mdash; Training &amp; Placement Office</p>
+        <p>Vidyavihar (East), Mumbai, Maharashtra 400 077</p>
+        <p style="margin-top:6px;">This is an automated request from InternProof. Do not reply to the source email.</p>
+      </div>
+
+    </div><!-- /.verify-container -->
+
+  </div><!-- /.verify-page -->
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/api.js"></script>
+  <script src="js/verify.js"></script>
+</body>
+</html>

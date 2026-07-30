@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InternProof Admin | TPO Verification Dashboard</title>
+  <meta name="description" content="TPO and Faculty dashboard for reviewing, approving, and tracking student internship submissions at Somaiya University.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <!-- =============================================
+       LOGIN SCREEN (shown if not authenticated)
+  ============================================== -->
+  <div id="loginScreen" class="login-overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" rx="20" fill="#B7202E"/>
+            <path d="M30 30H70V45H45V55H65V70H30V30Z" fill="white"/>
+          </svg>
+          <span class="login-logo-text">Intern<span>Proof</span></span>
+        </div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">Admin Sign In</h2>
+        <p class="login-subtitle">Access the TPO verification portal using your Somaiya credentials.</p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="loginEmail">Somaiya Email Address</label>
+          <input type="email" id="loginEmail" placeholder="admin@somaiya.edu" required>
+          <span class="validation-error">Must be a valid @somaiya.edu email address.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-icon-wrap">
+            <input type="password" id="loginPassword" placeholder="Enter your password" required style="padding-right: 44px;">
+            <button type="button" id="togglePassword" class="input-icon-btn" aria-label="Toggle password visibility" title="Show/hide password">
+              <i data-lucide="eye" style="width:16px;height:16px;"></i>
+            </button>
+          </div>
+          <span class="validation-error">Password is required.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="loginRole">Sign in as</label>
+          <select id="loginRole">
+            <option value="faculty">Faculty Mentor</option>
+            <option value="tpo">TPO Administrator</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;" id="btnLogin">
+          Sign In <i data-lucide="arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Credential hint panel -->
+      <div style="margin-top: 24px; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden;">
+        <div style="background: var(--bg-canvas); padding: 10px 14px; border-bottom: 1px solid var(--border-color);">
+          <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0;">Login Credentials</p>
+        </div>
+        <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <p style="font-size: 12px; font-weight: 600; color: var(--text-heading); margin: 0;">Faculty Mentor</p>
+            <p style="font-size: 12px; color: var(--text-muted); font-family: monospace; margin: 0;">faculty@somaiya.edu &nbsp;/&nbsp; faculty2026</p>
+          </div>
+          <div style="height: 1px; background: var(--border-color);"></div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <p style="font-size: 12px; font-weight: 600; color: var(--text-heading); margin: 0;">TPO Administrator</p>
+            <p style="font-size: 12px; color: var(--text-muted); font-family: monospace; margin: 0;">tpo@somaiya.edu &nbsp;/&nbsp; tpo2026</p>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top: 16px; text-align: center; font-size: 12px; color: var(--text-muted);">
+        For students, <a href="index.html">submit here</a>.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- =============================================
+       MAIN DASHBOARD (hidden until authenticated)
+  ============================================== -->
+  <div id="dashboardScreen" class="dashboard-layout" style="display: none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" rx="20" fill="#B7202E"/>
+          <path d="M30 30H70V45H45V55H65V70H30V30Z" fill="white"/>
+        </svg>
+        <span class="sidebar-brand-name">Intern<span>Proof</span></span>
+      </div>
+
+      <div class="sidebar-label">Overview</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="all" id="navAll">
+          <i data-lucide="layout-grid" class="nav-icon"></i>
+          All Submissions
+          <span class="nav-badge" id="badgeAll">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-label">By Status</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item" data-view="pending" id="navPending">
+          <i data-lucide="clock" class="nav-icon"></i>
+          Awaiting Review
+          <span class="nav-badge" id="badgePending">0</span>
+        </button>
+        <button class="nav-item" data-view="verified" id="navVerified">
+          <i data-lucide="check-circle-2" class="nav-icon"></i>
+          Company Verified
+        </button>
+        <button class="nav-item" data-view="flagged" id="navFlagged">
+          <i data-lucide="alert-triangle" class="nav-icon"></i>
+          Flagged
+        </button>
+        <button class="nav-item" data-view="approved" id="navApproved">
+          <i data-lucide="shield-check" class="nav-icon"></i>
+          Faculty Approved
+        </button>
+        <!-- TPO-only view -->
+        <button class="nav-item" data-view="tpoready" id="navTpoReady" style="display:none;">
+          <i data-lucide="award" class="nav-icon"></i>
+          Ready for Credits
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-info">
+          <div class="admin-avatar" id="adminAvatarInitial">A</div>
+          <div class="admin-details">
+            <span class="admin-name" id="adminDisplayName">Admin</span>
+            <span class="admin-role" id="adminDisplayRole">Faculty Mentor</span>
+          </div>
+        </div>
+        <button class="nav-item" id="btnLogout" style="margin-top: 12px;">
+          <i data-lucide="log-out" class="nav-icon"></i>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="dashboard-main">
+
+      <!-- TOP BAR -->
+      <div class="dashboard-topbar">
+        <span class="topbar-title" id="topbarTitle">All Submissions</span>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary btn-sm" id="btnRefresh">
+            <i data-lucide="refresh-cw"></i> Refresh
+          </button>
+          <button class="btn btn-primary btn-sm" id="btnExport" style="display:none;">
+            <i data-lucide="download"></i> Export Report
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTENT AREA -->
+      <div class="dashboard-content">
+
+        <!-- METRIC CARDS -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Total Submissions</span>
+              <div class="metric-icon blue">
+                <i data-lucide="file-text" style="width:16px;height:16px;"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="metricTotal">0</div>
+            <div class="metric-sub">across all departments</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Pending Review</span>
+              <div class="metric-icon yellow">
+                <i data-lucide="clock" style="width:16px;height:16px;"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="metricPending">0</div>
+            <div class="metric-sub">awaiting company response</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Verified</span>
+              <div class="metric-icon green">
+                <i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="metricVerified">0</div>
+            <div class="metric-sub">company confirmed</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Flagged</span>
+              <div class="metric-icon red">
+                <i data-lucide="alert-triangle" style="width:16px;height:16px;"></i>
+              </div>
+            </div>
+            <div class="metric-value" id="metricFlagged">0</div>
+            <div class="metric-sub">discrepancies reported</div>
+          </div>
+        </div>
+
+        <!-- SUBMISSIONS TABLE -->
+        <div class="table-section">
+          <div class="table-header">
+            <span class="table-title" id="tableTitle">All Submissions</span>
+            <div class="table-controls">
+              <!-- Search -->
+              <div class="search-input-wrapper">
+                <i data-lucide="search"></i>
+                <input
+                  type="text"
+                  class="search-input"
+                  id="searchInput"
+                  placeholder="Search name or roll no…"
+                >
+              </div>
+              <!-- Department Filter -->
+              <select class="filter-select" id="deptFilter">
+                <option value="">All Departments</option>
+                <option value="Computer Engineering">Computer Engineering</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Electronics & Telecom">Electronics & Telecom</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="AI & Data Science">AI & Data Science</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div id="tableWrapper">
+            <table class="data-table" id="submissionsTable">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Department</th>
+                  <th>Company / Role</th>
+                  <th>Type</th>
+                  <th>Company</th>
+                  <th>Faculty</th>
+                  <th>TPO</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div id="tableEmpty" class="table-empty" style="display:none;">
+              <div class="table-empty-icon">
+                <i data-lucide="inbox" style="width:48px;height:48px;"></i>
+              </div>
+              <h3>No submissions found</h3>
+              <p>No student submissions match the current filter. They will appear here once students submit their internship details.</p>
+            </div>
+          </div>
+
+          <div class="table-footer">
+            <span id="tableCount">Showing 0 records</span>
+          </div>
+        </div>
+
+      </div><!-- /.dashboard-content -->
+    </div><!-- /.dashboard-main -->
+  </div><!-- /.dashboard-layout -->
+
+  <!-- =============================================
+       DETAIL / ACTION MODAL
+  ============================================== -->
+  <div class="modal-overlay hidden" id="detailModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">Submission Detail</div>
+          <div class="modal-subtitle" id="modalSubtitle">—</div>
+        </div>
+        <button class="modal-close" id="modalClose">
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Student Info -->
+        <div class="modal-section">
+          <div class="modal-section-label">Student Details</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Full Name</span>
+              <span class="detail-value" id="detStudentName">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Roll Number</span>
+              <span class="detail-value" id="detRollNumber">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Department</span>
+              <span class="detail-value" id="detDepartment">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Student Email</span>
+              <span class="detail-value" id="detStudentEmail">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internship Info -->
+        <div class="modal-section">
+          <div class="modal-section-label">Internship Details</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Organization</span>
+              <span class="detail-value" id="detCompany">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Role Title</span>
+              <span class="detail-value" id="detRole">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Duration</span>
+              <span class="detail-value" id="detDuration">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Type</span>
+              <span class="detail-value" id="detType">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Supervisor Name</span>
+              <span class="detail-value" id="detMentorName">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Supervisor Email</span>
+              <span class="detail-value" id="detMentorEmail">—</span>
+            </div>
+            <div class="detail-item full-width">
+              <span class="detail-label">Certificate / Proof Link</span>
+              <a href="#" target="_blank" class="detail-link" id="detCertLink">
+                Open Document <i data-lucide="external-link" style="width:12px;height:12px;"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Status -->
+        <div class="modal-section">
+          <div class="modal-section-label">Verification Status</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Company</span>
+              <span id="detStatusCompany">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Faculty</span>
+              <span id="detStatusFaculty">—</span>
+            </div>
+            <div class="detail-item full-width" id="detRemarksCompanyWrapper" style="display:none;">
+              <span class="detail-label">Company Remarks</span>
+              <div class="remarks-box" id="detRemarksCompany" style="margin-top:6px;"></div>
+            </div>
+            <div class="detail-item full-width" id="detRemarksFacultyWrapper" style="display:none;">
+              <span class="detail-label">Faculty Remarks</span>
+              <div class="remarks-box" id="detRemarksFaculty" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Panel (Faculty can approve/reject; TPO can give final approval) -->
+        <div class="modal-section" id="actionSection">
+          <div class="modal-section-label">Take Action</div>
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 13px; color: var(--text-body);">Remarks (optional)</label>
+            <textarea class="remarks-textarea" id="actionRemarks" placeholder="Add any notes or justification for this action…"></textarea>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 12px;" id="actionButtons">
+            <!-- Populated by JS depending on role and current status -->
+          </div>
+        </div>
+
+      </div><!-- /.modal-body -->
+    </div><!-- /.modal-box -->
+  </div><!-- /.modal-overlay -->
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
