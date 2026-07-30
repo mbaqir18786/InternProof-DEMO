@@ -22,8 +22,8 @@
 // ============================================================
 // CONFIGURATION — FILL THESE IN
 // ============================================================
-const SPREADSHEET_ID  = 'YOUR_GOOGLE_SHEET_ID_HERE';
-const VERIFY_BASE_URL = 'https://YOUR_GITHUB_USERNAME.github.io/internproof/verify.html';
+const SPREADSHEET_ID  = '17rqWy88hiRd6PpNe6WLiSxbf0dW5m-TLptj4x7UJlvU';
+const VERIFY_BASE_URL = 'https://mbaqir18786.github.io/InternProof-DEMO/verify.html';
 
 // Sheet tab names (must match exactly)
 const SHEET_SUBMISSIONS = 'Submissions';

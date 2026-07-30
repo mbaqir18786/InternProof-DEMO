@@ -17,7 +17,7 @@ const API = (() => {
   // Paste your Apps Script Web App URL here after deployment.
   // Example: 'https://script.google.com/macros/s/AKfyc.../exec'
   // ----------------------------------------------------------------
-  const SCRIPT_URL = '';   // ← PASTE YOUR WEB APP URL HERE
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4AJ6hRqM0AEdXw3tk6AizEi0Kc-EN87HGVgJsO9OPJZslb_cZdTXDnWSJ9be8if6A6Q/exec';
 
   // If SCRIPT_URL is empty the app runs in localStorage-only mode.
   const IS_LIVE = SCRIPT_URL.trim().length > 0;
