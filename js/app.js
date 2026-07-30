@@ -143,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleInputError(name, false);
       }
 
-      // Roll Number validation (Exactly 8 digits)
-      const rollRegex = /^\d{8}$/;
+      // Roll Number validation (Exactly 11 digits)
+      const rollRegex = /^\d{11}$/;
       if (!rollRegex.test(roll.value.trim())) {
         toggleInputError(roll, true);
         isValid = false;
@@ -385,10 +385,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const idInput = document.getElementById('trackSubmissionId');
 
     // Validate roll input
-    const rollRegex = /^\d{8}$/;
+    const rollRegex = /^\d{11}$/;
     if (!rollRegex.test(rollInput.value.trim())) {
       toggleInputError(rollInput, true);
-      showToast('Please enter a valid 8-digit roll number.', 'error');
+      showToast('Please enter a valid 11-digit roll number.', 'error');
       return;
     }
     toggleInputError(rollInput, false);
