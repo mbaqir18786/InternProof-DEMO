@@ -181,6 +181,9 @@ function handleNewSubmission(data) {
   // Send branded verification email to company mentor
   sendMentorVerificationEmail(data, submissionId, token);
 
+  // Send registration confirmation email to the student with their Submission ID
+  sendStudentConfirmationEmail(data, submissionId);
+
   return {
     success:      true,
     submissionId: submissionId,
@@ -597,6 +600,69 @@ function sendStudentStatusEmail(studentEmail, studentName, submissionId, status,
 </html>`;
 
   GmailApp.sendEmail(studentEmail, subject, '', { htmlBody: html });
+}
+
+// ============================================================
+// EMAIL: Student Registration Confirmation & Submission ID
+// ============================================================
+function sendStudentConfirmationEmail(data, submissionId) {
+  const subject = '[InternProof] Internship Registered Successfully — ' + submissionId;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { margin: 0; padding: 0; background-color: #FAFAFA; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+    .wrapper { max-width: 580px; margin: 32px auto; background: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 12px; overflow: hidden; }
+    .header { background-color: #B7202E; padding: 28px 40px; }
+    .header-logo { color: #FFFFFF; font-size: 20px; font-weight: 700; }
+    .header-logo span { opacity: 0.85; }
+    .body { padding: 36px 40px; }
+    .footer { background: #FAFAFA; border-top: 1px solid #EAEAEA; padding: 20px 40px; text-align: center; }
+    .footer p { font-size: 11px; color: #8E8E93; margin: 4px 0; }
+    .id-box { background: #F8F9FA; border: 1px solid #EAEAEA; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0; }
+    .id-text { font-family: monospace; font-size: 20px; font-weight: bold; color: #B7202E; letter-spacing: 1px; }
+    .detail-list { font-size: 13px; color: #4A4A4A; line-height: 1.6; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="header-logo">Intern<span>Proof</span></div>
+    </div>
+    <div class="body">
+      <p style="font-size:15px; color:#1A1A1A;">Dear <strong>${data.studentName}</strong>,</p>
+      <p style="font-size:14px; color:#4A4A4A; line-height:1.6;">
+        Your internship verification request has been registered on the InternProof portal. 
+        An automated verification link has been sent to your supervisor: <strong>${data.mentorName} (${data.mentorEmail})</strong>.
+      </p>
+      
+      <div class="id-box">
+        <p style="margin:0 0 6px 0; font-size:12px; color:#8E8E93; text-transform:uppercase; font-weight:600;">Your Submission ID</p>
+        <div class="id-text">${submissionId}</div>
+      </div>
+      
+      <p style="font-size:14px; color:#4A4A4A; line-height:1.6;">
+        <strong>Keep this ID safe.</strong> You will need your Roll Number and this Submission ID to track your approval status on the portal.
+      </p>
+      
+      <div class="detail-list">
+        <strong>Registered Details:</strong><br>
+        • Company: ${data.companyName}<br>
+        • Position: ${data.roleTitle}<br>
+        • Duration: ${data.startDate} to ${data.endDate}
+      </div>
+    </div>
+    <div class="footer">
+      <p><strong>Somaiya Vidyavihar University</strong> — Training & Placement Office</p>
+      <p>This is an automated message. Do not reply.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  GmailApp.sendEmail(data.studentEmail, subject, '', { htmlBody: html });
 }
 
 // ============================================================
