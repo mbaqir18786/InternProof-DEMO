@@ -119,6 +119,36 @@ const API = (() => {
   }
 
   // ----------------------------------------------------------------
+  // NORMALIZE — Maps any backend key format to consistent camelCase
+  // Handles both old toCamelCase output (e.g. 'submissionid') and
+  // new explicit mapping (e.g. 'submissionId').
+  // ----------------------------------------------------------------
+  function normalizeRow(r) {
+    // Pick value by checking both camelCase and lowercase key names
+    const pick = (camel, lower) => r[camel] !== undefined ? r[camel] : (r[lower] !== undefined ? r[lower] : '');
+    return {
+      submissionId:    String(pick('submissionId',    'submissionid')    || ''),
+      timestamp:       pick('timestamp',       'timestamp')       || '',
+      studentName:     String(pick('studentName',     'studentname')     || ''),
+      rollNumber:      String(pick('rollNumber',      'rollnumber')      || ''),
+      studentEmail:    String(pick('studentEmail',    'studentemail')    || ''),
+      department:      String(pick('department',      'department')      || ''),
+      internshipType:  String(pick('internshipType',  'internshiptype')  || ''),
+      companyName:     String(pick('companyName',     'companyname')     || ''),
+      roleTitle:       String(pick('roleTitle',       'roletitle')       || ''),
+      startDate:       String(pick('startDate',       'startdate')       || ''),
+      endDate:         String(pick('endDate',         'enddate')         || ''),
+      mentorName:      String(pick('mentorName',      'mentorname')      || ''),
+      mentorEmail:     String(pick('mentorEmail',     'mentoremail')     || ''),
+      certificateLink: String(pick('certificateLink', 'certificatelink') || ''),
+      // status — support old Status_Company col name, new Status col, or statusCompany key
+      statusCompany:   String(pick('statusCompany',   'statuscompany')   || r['status_company'] || r['status'] || 'Pending'),
+      remarks:         String(pick('remarks',         'remarks')         || r['remarks_company'] || r['remarkscompany'] || ''),
+      lastUpdated:     pick('lastUpdated',    'lastupdated')     || '',
+    };
+  }
+
+  // ----------------------------------------------------------------
   // GET ALL — Admin Dashboard (all submissions)
   // ----------------------------------------------------------------
   async function getSubmissions() {
@@ -128,20 +158,21 @@ const API = (() => {
         const res    = await fetch(SCRIPT_URL + '?' + params.toString());
         const json   = await res.json();
 
-        // Sync down into localStorage for offline resilience
+        // Normalize every row regardless of backend version
         if (json.success && Array.isArray(json.data)) {
+          json.data = json.data.map(normalizeRow);
           localWrite(json.data);
         }
         return json;
       } catch (err) {
-        // Fall back to localStorage cache if network fails
         console.warn('API unavailable, using local cache.', err.message);
         return { success: true, data: localRead(), cached: true };
       }
     } else {
-      return { success: true, data: localRead() };
+      return { success: true, data: localRead().map(normalizeRow) };
     }
   }
+
 
   // ----------------------------------------------------------------
   // UPDATE STATUS — Faculty / TPO actions from admin dashboard
@@ -168,13 +199,9 @@ const API = (() => {
     const all = localRead();
     const idx = all.findIndex(s => s.submissionId === submissionId);
     if (idx !== -1) {
-      all[idx][statusField] = newStatus;
-
-      const remarkKey = statusField === 'statusFaculty' ? 'remarksFaculty'
-                      : statusField === 'statusTpo'     ? 'remarksTpo'
-                      : 'remarksCompany';
-      all[idx][remarkKey]   = remarks || '';
-      all[idx].lastUpdated  = new Date().toISOString();
+      all[idx].statusCompany = newStatus;
+      all[idx].remarks       = remarks || '';
+      all[idx].lastUpdated   = new Date().toISOString();
       localWrite(all);
     }
 
