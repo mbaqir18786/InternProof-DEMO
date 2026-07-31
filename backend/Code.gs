@@ -135,7 +135,7 @@ function handleNewSubmission(data) {
   ensureTokensHeader(sheetTokens);
   ensureAuditHeader(sheetAudit);
 
-  // Write to Submissions sheet
+  // Write to Submissions sheet (17 cols — no Faculty/TPO)
   sheetSub.appendRow([
     submissionId,                   // A: SubmissionID
     now,                            // B: Timestamp
@@ -151,13 +151,9 @@ function handleNewSubmission(data) {
     data.mentorName     || '',      // L: MentorName
     data.mentorEmail    || '',      // M: MentorEmail
     data.certificateLink || '',     // N: OfferLetterLink
-    'Pending',                      // O: Status_Company
-    'Pending',                      // P: Status_Faculty
-    'Pending',                      // Q: Status_TPO
-    '',                             // R: Remarks_Company
-    '',                             // S: Remarks_Faculty
-    '',                             // T: Remarks_TPO
-    now                             // U: LastUpdated
+    'Pending',                      // O: Status  (company approval = final)
+    '',                             // P: Remarks
+    now                             // Q: LastUpdated
   ]);
 
   // Write verification token
@@ -201,29 +197,23 @@ function handleStatusUpdate(data) {
   const rows     = sheet.getDataRange().getValues();
   const now      = new Date();
 
-  // Column indices (0-based, row[0] is header)
-  const COL = { ID: 0, STATUS_CO: 14, STATUS_FA: 15, STATUS_TPO: 16,
-                REM_CO: 17, REM_FA: 18, REM_TPO: 19, UPDATED: 20 };
+  // Column indices (0-based) — simplified 17-col schema
+  const COL = { ID: 0, STATUS: 14, REMARKS: 15, UPDATED: 16 };
 
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][COL.ID] === data.submissionId) {
-      const rowNum = i + 1; // 1-based for Sheets API
+      const rowNum = i + 1;
 
-      if (data.statusField === 'statusFaculty') {
-        sheet.getRange(rowNum, COL.STATUS_FA + 1).setValue(data.newStatus);
-        sheet.getRange(rowNum, COL.REM_FA + 1).setValue(data.remarks || '');
-      } else if (data.statusField === 'statusTpo') {
-        sheet.getRange(rowNum, COL.STATUS_TPO + 1).setValue(data.newStatus);
-        sheet.getRange(rowNum, COL.REM_TPO + 1).setValue(data.remarks || '');
-      }
-
+      // TPO can override status manually if needed
+      sheet.getRange(rowNum, COL.STATUS + 1).setValue(data.newStatus);
+      sheet.getRange(rowNum, COL.REMARKS + 1).setValue(data.remarks || '');
       sheet.getRange(rowNum, COL.UPDATED + 1).setValue(now);
 
       // Audit log
       audit.appendRow([
         generateLogId(), now,
         data.actor || 'admin',
-        data.statusField + ' → ' + data.newStatus,
+        'Status → ' + data.newStatus,
         data.submissionId
       ]);
 
@@ -269,18 +259,19 @@ function handleCompanyVerification(token, decision, remarks) {
   // Mark token as used
   sheetTokens.getRange(tokenRowNum, 4).setValue('TRUE');
 
-  // Update submission status
+  // Update submission status — 17-col schema
   const subRows = sheetSub.getDataRange().getValues();
-  const COL = { ID: 0, STATUS_CO: 14, REM_CO: 17, UPDATED: 20,
-                STUDENT_NAME: 2, STUDENT_EMAIL: 4, COMPANY: 7, ROLE: 8 };
+  const COL = { ID: 0, STATUS: 14, REMARKS: 15, UPDATED: 16,
+                STUDENT_NAME: 2, STUDENT_EMAIL: 4 };
 
   for (let i = 1; i < subRows.length; i++) {
     if (subRows[i][COL.ID] === submissionId) {
-      const rowNum      = i + 1;
-      const newStatus   = (decision === 'approve') ? 'Verified' : 'Flagged';
+      const rowNum    = i + 1;
+      // 'approve' → 'Approved' (final); 'flag' → 'Flagged'
+      const newStatus = (decision === 'approve') ? 'Approved' : 'Flagged';
 
-      sheetSub.getRange(rowNum, COL.STATUS_CO + 1).setValue(newStatus);
-      sheetSub.getRange(rowNum, COL.REM_CO + 1).setValue(remarks || '');
+      sheetSub.getRange(rowNum, COL.STATUS + 1).setValue(newStatus);
+      sheetSub.getRange(rowNum, COL.REMARKS + 1).setValue(remarks || '');
       sheetSub.getRange(rowNum, COL.UPDATED + 1).setValue(now);
 
       // Audit log
@@ -379,12 +370,26 @@ function getAllSubmissions() {
 
   if (rows.length <= 1) return { success: true, data: [] };
 
-  const headers = rows[0];
-  const data = rows.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h, i) => { obj[toCamelCase(h)] = row[i]; });
-    return obj;
-  });
+  // Explicit mapping — avoids toCamelCase bugs with PascalCase headers
+  const data = rows.slice(1).map(r => ({
+    submissionId:    String(r[0]  || ''),
+    timestamp:       r[1]  || '',
+    studentName:     String(r[2]  || ''),
+    rollNumber:      String(r[3]  || ''),
+    studentEmail:    String(r[4]  || ''),
+    department:      String(r[5]  || ''),
+    internshipType:  String(r[6]  || ''),
+    companyName:     String(r[7]  || ''),
+    roleTitle:       String(r[8]  || ''),
+    startDate:       String(r[9]  || ''),
+    endDate:         String(r[10] || ''),
+    mentorName:      String(r[11] || ''),
+    mentorEmail:     String(r[12] || ''),
+    certificateLink: String(r[13] || ''),
+    statusCompany:   String(r[14] || 'Pending'),
+    remarks:         String(r[15] || ''),
+    lastUpdated:     r[16] || ''
+  }));
 
   return { success: true, data: data };
 }
@@ -413,27 +418,23 @@ function getSubmissionStatus(roll, id) {
   return {
     success: true,
     data: {
-      submissionId:    record[0],
-      timestamp:       record[1],
-      studentName:     record[2],
-      rollNumber:      record[3],
-      studentEmail:    record[4],
-      department:      record[5],
-      internshipType:  record[6],
-      companyName:     record[7],
-      roleTitle:       record[8],
-      startDate:       record[9],
-      endDate:         record[10],
-      mentorName:      record[11],
-      mentorEmail:     record[12],
-      certificateLink: record[13],
-      statusCompany:   record[14],
-      statusFaculty:   record[15],
-      statusTpo:       record[16],
-      remarksCompany:  record[17],
-      remarksFaculty:  record[18],
-      remarksTpo:      record[19],
-      lastUpdated:     record[20]
+      submissionId:    String(record[0]  || ''),
+      timestamp:       record[1]  || '',
+      studentName:     String(record[2]  || ''),
+      rollNumber:      String(record[3]  || ''),
+      studentEmail:    String(record[4]  || ''),
+      department:      String(record[5]  || ''),
+      internshipType:  String(record[6]  || ''),
+      companyName:     String(record[7]  || ''),
+      roleTitle:       String(record[8]  || ''),
+      startDate:       String(record[9]  || ''),
+      endDate:         String(record[10] || ''),
+      mentorName:      String(record[11] || ''),
+      mentorEmail:     String(record[12] || ''),
+      certificateLink: String(record[13] || ''),
+      statusCompany:   String(record[14] || 'Pending'),
+      remarks:         String(record[15] || ''),
+      lastUpdated:     record[16] || ''
     }
   };
 }
@@ -705,8 +706,7 @@ function ensureSubmissionsHeader(sheet) {
       'SubmissionID', 'Timestamp', 'StudentName', 'RollNumber', 'StudentEmail',
       'Department', 'InternshipType', 'CompanyName', 'RoleTitle', 'StartDate', 'EndDate',
       'MentorName', 'MentorEmail', 'OfferLetterLink',
-      'Status_Company', 'Status_Faculty', 'Status_TPO',
-      'Remarks_Company', 'Remarks_Faculty', 'Remarks_TPO', 'LastUpdated'
+      'Status', 'Remarks', 'LastUpdated'
     ]);
   }
 }

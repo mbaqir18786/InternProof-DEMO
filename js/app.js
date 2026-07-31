@@ -36,38 +36,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const timeNodeSubmit = document.getElementById('timeNodeSubmit');
   const timeNodeSubmitDate = document.getElementById('timeNodeSubmitDate');
-  
   const timeNodeCompany = document.getElementById('timeNodeCompany');
   const timeNodeCompanyStatus = document.getElementById('timeNodeCompanyStatus');
   const timeNodeCompanyDesc = document.getElementById('timeNodeCompanyDesc');
-  
-  const timeNodeFaculty = document.getElementById('timeNodeFaculty');
-  const timeNodeFacultyStatus = document.getElementById('timeNodeFacultyStatus');
-  const timeNodeFacultyDesc = document.getElementById('timeNodeFacultyDesc');
-  
-  const timeNodeTpo = document.getElementById('timeNodeTpo');
-  const timeNodeTpoStatus = document.getElementById('timeNodeTpoStatus');
-  const timeNodeTpoDesc = document.getElementById('timeNodeTpoDesc');
+  const successPanel = document.getElementById('successPanel');
+  const successSubId = document.getElementById('successSubId');
 
   let currentStep = 1;
 
   // --- INITIALIZE ICONOGRAPHY ---
   lucide.createIcons();
 
-  // --- NAVIGATION TAB SWITCHING ---
-  tabSubmit.addEventListener('click', () => {
-    tabSubmit.classList.add('active');
-    tabTrack.classList.remove('active');
-    panelSubmit.classList.add('active');
-    panelTrack.classList.remove('active');
-  });
+  // ----------------------------------------------------------------
+  // HELPERS: switch active tab + persist in URL hash
+  // ----------------------------------------------------------------
+  function showTab(tab) {
+    if (tab === 'track') {
+      tabTrack.classList.add('active');
+      tabSubmit.classList.remove('active');
+      panelTrack.classList.add('active');
+      panelSubmit.classList.remove('active');
+      history.replaceState(null, '', '#track');
+    } else {
+      tabSubmit.classList.add('active');
+      tabTrack.classList.remove('active');
+      panelSubmit.classList.add('active');
+      panelTrack.classList.remove('active');
+      history.replaceState(null, '', '#submit');
+    }
+  }
 
-  tabTrack.addEventListener('click', () => {
-    tabTrack.classList.add('active');
-    tabSubmit.classList.remove('active');
-    panelTrack.classList.add('active');
-    panelSubmit.classList.remove('active');
-  });
+  // Restore tab from hash on page load
+  if (window.location.hash === '#track') showTab('track');
+
+  // --- NAVIGATION TAB SWITCHING ---
+  tabSubmit.addEventListener('click', () => showTab('submit'));
+  tabTrack.addEventListener('click',  () => showTab('track'));
 
   btnAdminPortal.addEventListener('click', () => {
     window.location.href = 'dashboard.html';
@@ -355,21 +359,39 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await API.submitInternship(data);
       if (!result.success) throw new Error(result.error || 'Submission failed');
 
-      // Reset form & wizard UI
-      form.reset();
-      currentStep = 1;
-      updateWizardUI();
       btnSubmit.disabled = false;
       btnSubmit.innerHTML = originalText;
 
-      // Show success toast with generated ID
-      showToast(`Submission successful! ID: ${result.submissionId}`, 'success');
+      // ---- Show success panel with Submission ID ----
+      form.style.display = 'none';
+      successSubId.textContent = result.submissionId;
+      successPanel.style.display = 'block';
+      lucide.createIcons();
 
-      // Auto‑switch to tracking view and pre‑fill lookup fields
-      document.getElementById('trackRollNumber').value = data.rollNumber;
-      document.getElementById('trackSubmissionId').value = result.submissionId;
-      tabTrack.click();
-      triggerLookup(data.rollNumber, result.submissionId);
+      // Copy-to-clipboard button
+      document.getElementById('btnCopyId').addEventListener('click', () => {
+        navigator.clipboard.writeText(result.submissionId).then(() => {
+          showToast('Submission ID copied to clipboard!', 'success');
+        }).catch(() => {
+          showToast('Could not copy. Please copy manually: ' + result.submissionId, 'info');
+        });
+      });
+
+      // Track My Status button
+      document.getElementById('btnTrackStatus').addEventListener('click', () => {
+        // Pre-fill tracking fields and switch to track tab
+        document.getElementById('trackRollNumber').value = data.rollNumber;
+        document.getElementById('trackSubmissionId').value = result.submissionId;
+        // Reset submit tab for next use
+        form.style.display = 'block';
+        successPanel.style.display = 'none';
+        form.reset();
+        currentStep = 1;
+        updateWizardUI();
+        showTab('track');
+        triggerLookup(data.rollNumber, result.submissionId);
+      });
+
     } catch (err) {
       btnSubmit.disabled = false;
       btnSubmit.innerHTML = originalText;
@@ -416,107 +438,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderTimeline = (record) => {
     trackResultPanel.style.display = 'block';
     trackResultTitle.textContent = `${record.roleTitle} at ${record.companyName}`;
-    
+
     const dateFormatted = new Date(record.timestamp).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric', month: 'short', year: 'numeric'
     });
-    trackResultMeta.textContent = `ID: ${record.submissionId} | Registered on ${dateFormatted}`;
+    trackResultMeta.textContent = `ID: ${record.submissionId} | Submitted on ${dateFormatted}`;
 
-    // Node 1: Submission
+    // Node 1: Submission (always complete)
     timeNodeSubmitDate.textContent = `Completed on ${new Date(record.timestamp).toLocaleDateString('en-IN')}`;
-    
-    // Reset classes
-    const nodes = [
-      { circle: timeNodeCompany, status: timeNodeCompanyStatus, desc: timeNodeCompanyDesc },
-      { circle: timeNodeFaculty, status: timeNodeFacultyStatus, desc: timeNodeFacultyDesc },
-      { circle: timeNodeTpo, status: timeNodeTpoStatus, desc: timeNodeTpoDesc }
-    ];
-    nodes.forEach(n => {
-      n.circle.className = 'timeline-icon';
-      n.circle.innerHTML = '';
-    });
-    companyRemarksBox.style.display = 'none';
 
-    // Node 2: Company Status styling
-    if (record.statusCompany === 'Verified') {
+    // Node 2: Company Verification (final status)
+    const status = record.statusCompany || 'Pending';
+    timeNodeCompany.className = 'timeline-icon';
+    timeNodeCompany.innerHTML = '';
+
+    if (status === 'Approved' || status === 'Verified') {
       timeNodeCompany.classList.add('completed');
-      timeNodeCompany.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i>`;
-      timeNodeCompanyStatus.innerHTML = `<span class="badge badge-success">Verified</span>`;
-      timeNodeCompanyDesc.textContent = `Approved by external supervisor (${record.mentorName}).`;
-      
-      if (record.remarksCompany) {
-        companyRemarksBox.style.display = 'block';
-        companyRemarksBox.className = 'remarks-box';
-        companyRemarksText.textContent = record.remarksCompany;
-      }
-    } else if (record.statusCompany === 'Flagged') {
+      timeNodeCompany.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;"></i>';
+      timeNodeCompanyStatus.textContent = 'Approved by Supervisor';
+      timeNodeCompanyDesc.textContent = 'Your internship has been verified and approved.';
+    } else if (status === 'Flagged') {
       timeNodeCompany.classList.add('flagged');
-      timeNodeCompany.innerHTML = `<i data-lucide="alert-triangle" style="width: 14px; height: 14px;"></i>`;
-      timeNodeCompanyStatus.innerHTML = `<span class="badge badge-danger">Discrepancy Flagged</span>`;
-      timeNodeCompanyDesc.textContent = `Action Required: Details contested by mentor (${record.mentorName}).`;
-      
-      if (record.remarksCompany) {
-        companyRemarksBox.style.display = 'block';
-        companyRemarksBox.className = 'remarks-box flagged';
-        companyRemarksText.textContent = record.remarksCompany;
-      }
+      timeNodeCompany.innerHTML = '<i data-lucide="alert-triangle" style="width:14px;height:14px;"></i>';
+      timeNodeCompanyStatus.textContent = 'Discrepancy Flagged';
+      timeNodeCompanyDesc.textContent = 'Your supervisor raised a concern. Check remarks below.';
     } else {
       timeNodeCompany.classList.add('pending');
-      timeNodeCompany.innerHTML = `<i data-lucide="loader" class="shimmer" style="width: 14px; height: 14px;"></i>`;
-      timeNodeCompanyStatus.innerHTML = `<span class="badge badge-warning">Awaiting Review</span>`;
-      timeNodeCompanyDesc.textContent = `Verification link sent to ${record.mentorEmail}.`;
+      timeNodeCompany.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;"></i>';
+      timeNodeCompanyStatus.textContent = 'Pending';
+      timeNodeCompanyDesc.textContent = 'Waiting for supervisor to respond to the verification email.';
     }
 
-    // Node 3: Faculty Status styling
-    if (record.statusCompany === 'Flagged') {
-      timeNodeFaculty.innerHTML = `<i data-lucide="minus" style="width: 14px; height: 14px;"></i>`;
-      timeNodeFacultyStatus.textContent = 'Hold';
-      timeNodeFacultyDesc.textContent = 'Review paused due to company discrepancy report.';
-    } else if (record.statusCompany === 'Pending') {
-      timeNodeFaculty.innerHTML = `<i data-lucide="clock" style="width: 14px; height: 14px;"></i>`;
-      timeNodeFacultyStatus.textContent = 'Pending';
-      timeNodeFacultyDesc.textContent = 'Awaiting company approval before faculty audit.';
+    // Show remarks if available
+    const remarks = record.remarks || record.remarksCompany || '';
+    if (remarks) {
+      companyRemarksBox.style.display = 'block';
+      companyRemarksText.textContent = remarks;
     } else {
-      // Company is verified, check Faculty
-      if (record.statusFaculty === 'Approved') {
-        timeNodeFaculty.classList.add('completed');
-        timeNodeFaculty.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i>`;
-        timeNodeFacultyStatus.innerHTML = `<span class="badge badge-success">Approved</span>`;
-        timeNodeFacultyDesc.textContent = 'Internship details endorsed by department head.';
-      } else {
-        timeNodeFaculty.classList.add('pending');
-        timeNodeFaculty.innerHTML = `<i data-lucide="loader" class="shimmer" style="width: 14px; height: 14px;"></i>`;
-        timeNodeFacultyStatus.innerHTML = `<span class="badge badge-warning">Awaiting Audit</span>`;
-        timeNodeFacultyDesc.textContent = 'Submitted to department faculty coordinator.';
-      }
+      companyRemarksBox.style.display = 'none';
     }
 
-    // Node 4: TPO status styling
-    if (record.statusFaculty !== 'Approved') {
-      timeNodeTpo.innerHTML = `<i data-lucide="minus" style="width: 14px; height: 14px;"></i>`;
-      timeNodeTpoStatus.textContent = 'Hold';
-      timeNodeTpoDesc.textContent = 'Awaiting faculty approval recommendations.';
-    } else {
-      if (record.statusTpo === 'Approved') {
-        timeNodeTpo.classList.add('completed');
-        timeNodeTpo.innerHTML = `<i data-lucide="award" style="width: 14px; height: 14px;"></i>`;
-        timeNodeTpoStatus.innerHTML = `<span class="badge badge-success">Credits Released</span>`;
-        timeNodeTpoDesc.textContent = 'Internship verified. Credit records updated in university ledger.';
-      } else {
-        timeNodeTpo.classList.add('pending');
-        timeNodeTpo.innerHTML = `<i data-lucide="loader" class="shimmer" style="width: 14px; height: 14px;"></i>`;
-        timeNodeTpoStatus.innerHTML = `<span class="badge badge-warning">Under Final Review</span>`;
-        timeNodeTpoDesc.textContent = 'Compilation of documents for final ledger release.';
-      }
-    }
-
-    // Rerender Lucide Icons inside timeline
     lucide.createIcons();
-    showToast('Application details loaded.', 'success');
   };
 
   // --- GENERAL TOAST NOTIFICATION HELPERS ---

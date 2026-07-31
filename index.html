@@ -272,6 +272,64 @@
           </div>
 
         </form>
+
+        <!-- SUCCESS PANEL (shown after submission) -->
+        <div id="successPanel" style="display:none; margin-top: 24px;">
+          <div style="
+            background: linear-gradient(135deg, #0f5f36 0%, #1a8a4e 100%);
+            border-radius: 16px;
+            padding: 32px 28px;
+            text-align: center;
+            color: #fff;
+          ">
+            <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <i data-lucide="check-circle-2" style="width:28px;height:28px;"></i>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;margin-bottom:6px;">Submission Successful!</h3>
+            <p style="opacity:0.85;font-size:14px;margin-bottom:24px;">
+              Your internship has been registered. A verification email has been sent to your supervisor.
+            </p>
+
+            <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:18px 20px;margin-bottom:20px;">
+              <p style="font-size:11px;opacity:0.75;text-transform:uppercase;font-weight:600;letter-spacing:0.08em;margin-bottom:8px;">Your Submission ID</p>
+              <div style="display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;">
+                <span id="successSubId" style="font-family:monospace;font-size:22px;font-weight:800;letter-spacing:1px;">—</span>
+                <button id="btnCopyId" style="
+                  background:rgba(255,255,255,0.25);
+                  color:#fff;
+                  border:none;
+                  border-radius:8px;
+                  padding:7px 14px;
+                  font-size:12px;
+                  font-weight:600;
+                  cursor:pointer;
+                  display:flex;align-items:center;gap:5px;
+                ">
+                  <i data-lucide="copy" style="width:13px;height:13px;"></i> Copy
+                </button>
+              </div>
+            </div>
+
+            <p style="font-size:13px;opacity:0.8;">Save this ID — you can use it with your Roll Number to track your status anytime.</p>
+            <p style="font-size:12px;opacity:0.65;margin-top:8px;">A confirmation email with this ID has also been sent to your registered Somaiya email.</p>
+
+            <button id="btnTrackStatus" style="
+              margin-top:20px;
+              background:#fff;
+              color:#0f5f36;
+              border:none;
+              border-radius:10px;
+              padding:12px 28px;
+              font-size:14px;
+              font-weight:700;
+              cursor:pointer;
+              display:inline-flex;align-items:center;gap:7px;
+            ">
+              <i data-lucide="activity" style="width:15px;height:15px;"></i> Track My Status
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -313,11 +371,11 @@
               <div class="timeline-content">
                 <div class="timeline-title">Submitted</div>
                 <div class="timeline-time" id="timeNodeSubmitDate">-</div>
-                <div class="timeline-desc">Application saved in database and awaiting mentor review.</div>
+                <div class="timeline-desc">Application saved and verification link emailed to your supervisor.</div>
               </div>
             </div>
 
-            <!-- Node 2: Company Verification -->
+            <!-- Node 2: Company Verification (final) -->
             <div class="timeline-item">
               <div class="timeline-icon" id="timeNodeCompany">
                 <i data-lucide="loader" style="width: 14px; height: 14px;"></i>
@@ -325,37 +383,13 @@
               <div class="timeline-content">
                 <div class="timeline-title">Company Verification</div>
                 <div class="timeline-time" id="timeNodeCompanyStatus">-</div>
-                <div class="timeline-desc" id="timeNodeCompanyDesc">Verification link emailed to supervisor.</div>
-                
-                <!-- Discrepancy / Remarks display container -->
+                <div class="timeline-desc" id="timeNodeCompanyDesc">Awaiting supervisor confirmation.</div>
+
+                <!-- Discrepancy / Remarks display -->
                 <div class="remarks-box" id="companyRemarksBox" style="display: none;">
                   <div class="remarks-title">Supervisor Comments:</div>
                   <p id="companyRemarksText" style="font-size: 13px; color: var(--text-heading);">-</p>
                 </div>
-              </div>
-            </div>
-
-            <!-- Node 3: Faculty Recommendation -->
-            <div class="timeline-item">
-              <div class="timeline-icon" id="timeNodeFaculty">
-                <i data-lucide="shield" style="width: 14px; height: 14px;"></i>
-              </div>
-              <div class="timeline-content">
-                <div class="timeline-title">Faculty Mentor Audit</div>
-                <div class="timeline-time" id="timeNodeFacultyStatus">-</div>
-                <div class="timeline-desc" id="timeNodeFacultyDesc">Awaiting company verification.</div>
-              </div>
-            </div>
-
-            <!-- Node 4: TPO Final Sign-Off -->
-            <div class="timeline-item">
-              <div class="timeline-icon" id="timeNodeTpo">
-                <i data-lucide="award" style="width: 14px; height: 14px;"></i>
-              </div>
-              <div class="timeline-content">
-                <div class="timeline-title">TPO Final Credit Approval</div>
-                <div class="timeline-time" id="timeNodeTpoStatus">-</div>
-                <div class="timeline-desc" id="timeNodeTpoDesc">Academic placement record compilation.</div>
               </div>
             </div>
           </div>

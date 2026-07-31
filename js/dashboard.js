@@ -231,12 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sidebar view filter
     switch (currentFilter) {
       case 'pending':  filtered = filtered.filter(s => s.statusCompany === 'Pending');  break;
-      case 'verified': filtered = filtered.filter(s => s.statusCompany === 'Verified'); break;
+      case 'verified': filtered = filtered.filter(s => s.statusCompany === 'Approved' || s.statusCompany === 'Verified'); break;
       case 'flagged':  filtered = filtered.filter(s => s.statusCompany === 'Flagged');  break;
-      case 'approved': filtered = filtered.filter(s => s.statusFaculty === 'Approved'); break;
-      case 'tpoready': filtered = filtered.filter(s =>
-        s.statusFaculty === 'Approved' && s.statusTpo !== 'Approved'
-      ); break;
     }
 
     // Department filter
@@ -309,8 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
         <td><span class="badge ${sub.internshipType === 'internal' ? 'badge-warning' : 'badge-success'}">${typeLabel}</span></td>
         <td>${statusBadge(sub.statusCompany)}</td>
-        <td>${statusBadge(sub.statusFaculty)}</td>
-        <td>${statusBadge(sub.statusTpo)}</td>
         <td style="color: var(--text-muted); font-size: 12px;">${dateStr}</td>
         <td>
           <div class="cell-actions">
@@ -440,48 +434,24 @@ document.addEventListener('DOMContentLoaded', () => {
     actionButtons.innerHTML = '';
     actionSection.style.display = 'block';
 
-    if (currentAdmin.role === 'faculty') {
-      // Faculty can approve or reject if company has verified and faculty hasn't acted yet
-      if (sub.statusCompany === 'Verified' && sub.statusFaculty === 'Pending') {
-        actionButtons.innerHTML = `
-          <button class="btn btn-secondary btn-sm" id="actReject">
-            <i data-lucide="x-circle"></i> Reject
-          </button>
-          <button class="btn btn-primary btn-sm" id="actApprove">
-            <i data-lucide="check-circle-2"></i> Approve
-          </button>
-        `;
-        document.getElementById('actApprove').addEventListener('click', () =>
-          updateStatus(activeSubmissionId, 'statusFaculty', 'Approved', 'remarksFaculty')
-        );
-        document.getElementById('actReject').addEventListener('click', () =>
-          updateStatus(activeSubmissionId, 'statusFaculty', 'Rejected', 'remarksFaculty')
-        );
-      } else {
-        actionSection.style.display = 'none';
-      }
-    }
-
-    if (currentAdmin.role === 'tpo') {
-      // TPO gives final credit approval once faculty approves
-      if (sub.statusFaculty === 'Approved' && sub.statusTpo === 'Pending') {
-        actionButtons.innerHTML = `
-          <button class="btn btn-secondary btn-sm" id="actTpoHold">
-            <i data-lucide="pause-circle"></i> Hold
-          </button>
-          <button class="btn btn-primary btn-sm" id="actTpoApprove">
-            <i data-lucide="award"></i> Grant Credits
-          </button>
-        `;
-        document.getElementById('actTpoApprove').addEventListener('click', () =>
-          updateStatus(activeSubmissionId, 'statusTpo', 'Approved', 'remarksTpo')
-        );
-        document.getElementById('actTpoHold').addEventListener('click', () =>
-          updateStatus(activeSubmissionId, 'statusTpo', 'Hold', 'remarksTpo')
-        );
-      } else {
-        actionSection.style.display = 'none';
-      }
+    // TPO (or any admin) can manually update status if company has not yet verified
+    if (sub.statusCompany === 'Pending') {
+      actionButtons.innerHTML = `
+        <button class="btn btn-secondary btn-sm" id="actFlag">
+          <i data-lucide="alert-triangle"></i> Flag
+        </button>
+        <button class="btn btn-primary btn-sm" id="actApprove">
+          <i data-lucide="check-circle-2"></i> Mark Approved
+        </button>
+      `;
+      document.getElementById('actApprove').addEventListener('click', () =>
+        updateStatus(activeSubmissionId, 'statusCompany', 'Approved', 'remarks')
+      );
+      document.getElementById('actFlag').addEventListener('click', () =>
+        updateStatus(activeSubmissionId, 'statusCompany', 'Flagged', 'remarks')
+      );
+    } else {
+      actionSection.style.display = 'none';
     }
 
     lucide.createIcons();
@@ -516,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // SIDEBAR NAV SWITCHING
   // ============================================================
 
-  const navItems = [navAll, navPending, navVerified, navFlagged, navApproved, navTpoReady];
+  const navItems = [navAll, navPending, navVerified, navFlagged];
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -525,12 +495,10 @@ document.addEventListener('DOMContentLoaded', () => {
       currentFilter = item.dataset.view;
 
       const titles = {
-        all: 'All Submissions',
-        pending: 'Awaiting Company Review',
-        verified: 'Company Verified',
-        flagged: 'Discrepancies Flagged',
-        approved: 'Faculty Approved',
-        tpoready: 'Ready for Credit Approval',
+        all:      'All Submissions',
+        pending:  'Awaiting Company Review',
+        verified: 'Company Approved',
+        flagged:  'Discrepancies Flagged',
       };
       const t = titles[currentFilter] || 'Submissions';
       topbarTitle.textContent = t;
